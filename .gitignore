@@ -1,0 +1,28 @@
+# ===== Python / Streamlit 一般忽略項 =====
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.log
+*.sqlite3
+.DS_Store
+
+# ===== 本地環境設定 =====
+.env
+.venv/
+venv/
+.idea/
+.vscode/
+*.code-workspace
+
+# ===== 測試與暫存檔 =====
+*.bak
+*.tmp
+*.swp
+*.orig
+
+# ===== 敏感資料（務必排除） =====
+questions.json
+encrypted_output.txt
+quiz_env.txt

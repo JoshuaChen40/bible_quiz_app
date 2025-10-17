@@ -1,0 +1,10 @@
+streamlit==1.38.0
+python-dotenv==1.0.1
+cryptography==43.0.0
+requests==2.32.3
+schedule==1.2.1
+altair==5.4.1
+pandas==2.2.2
+numpy==1.26.4
+protobuf==4.25.3
+watchdog==4.0.2

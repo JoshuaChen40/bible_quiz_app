@@ -151,7 +151,7 @@ http://localhost:8501
 2️⃣ 執行：
 
 ```bash
-python encrypt_quiz_file.py
+python3 encrypt_quiz_file.py
 ```
 
 → 生成新的 `questions.enc`

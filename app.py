@@ -8,48 +8,36 @@ from cryptography.fernet import Fernet
 # 🧩 初始化設定
 # =====================================================
 st.set_page_config(page_title="聖經大車拼", page_icon="✝️", layout="wide")
-
-# 讀取 .env（本地開發用）
 load_dotenv()
 
 # =====================================================
-# 💅 全局樣式調整（投影幕專用字體放大）
+# 💅 全局樣式（中大型字體 + 顏色美化）
 # =====================================================
 st.markdown("""
 <style>
-/* 整體文字放大 */
 html, body, [class*="css"] {
-    font-size: 2.5vw !important;  /* 約等於46pt */
+    font-size: 1.7vw !important;      /* 約 30pt */
     line-height: 1.4em !important;
 }
-
-/* 標題更醒目 */
 h1, h2, h3, h4, h5 {
     font-weight: 800 !important;
     color: #222 !important;
+    line-height: 1.3em !important;
 }
-
-/* 題目選項與說明 */
 p, span, div {
-    font-size: 2.3vw !important;
+    font-size: 1.6vw !important;
 }
-
-/* 按鈕放大 */
 button, [data-testid="stButton"] button {
-    font-size: 2.5vw !important;
-    padding: 0.6em 1.4em !important;
-    border-radius: 12px !important;
+    font-size: 1.7vw !important;
+    padding: 0.4em 1em !important;
+    border-radius: 10px !important;
 }
-
-/* 成功與提示區塊 */
 .stAlert {
-    font-size: 2.3vw !important;
+    font-size: 1.6vw !important;
 }
-
-/* 調整區塊間距 */
 .block-container {
-    padding-top: 2em;
-    padding-bottom: 2em;
+    padding-top: 1.5em;
+    padding-bottom: 1.5em;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -112,6 +100,11 @@ def goto(page_name: str):
     st.session_state["page"] = page_name
     st.rerun()
 
+def goto_question(idx: int):
+    st.session_state["current_q"] = idx
+    st.session_state["show_answer"] = False
+    goto("question")
+
 # =====================================================
 # 🔐 登入頁面
 # =====================================================
@@ -129,7 +122,7 @@ def page_login():
             st.error("帳號或密碼錯誤")
 
 # =====================================================
-# 📚 題目集合頁
+# 📚 題目集合頁（豎式排列 + 暖身題橘色）
 # =====================================================
 def page_home():
     if not st.session_state["authenticated"]:
@@ -137,19 +130,32 @@ def page_home():
 
     st.title("📚 聖經大車拼題目集合")
 
+    # 依 q_group 分組
     groups = {}
     for i, q in enumerate(QUESTIONS):
         groups.setdefault(q["q_group"], []).append((i, q))
 
-    for group, items in groups.items():
-        st.markdown(f"### 🟩 {group}")
-        cols = st.columns(len(items))
-        for i, (idx, q) in enumerate(items):
-            with cols[i]:
-                if st.button(f"題目 {idx + 1}", key=f"btn_{idx}"):
-                    st.session_state["current_q"] = idx
-                    st.session_state["show_answer"] = False
-                    goto("question")
+    # 一組一欄（豎式排列）
+    cols = st.columns(len(groups))
+
+    for c_idx, (group, items) in enumerate(groups.items()):
+        with cols[c_idx]:
+            st.markdown(f"### 🟩 {group}")
+            for idx, q in items:
+                q_type = q.get("q_type", "q")
+                color = "#FFD8A8" if q_type == "warm_up" else "#E2ECF9"
+                st.markdown(
+                    f'<div style="background-color:{color}; '
+                    f'border-radius:10px; padding:0.3em 0.1em; margin-bottom:0.4em;">',
+                    unsafe_allow_html=True,
+                )
+                st.button(
+                    f"題目 {idx + 1}",
+                    key=f"btn_{idx}",
+                    use_container_width=True,
+                    on_click=lambda i=idx: goto_question(i),
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
 
     st.divider()
     if st.button("🚪 登出"):
@@ -157,7 +163,7 @@ def page_home():
         goto("login")
 
 # =====================================================
-# 📖 題目頁（容錯 + 大字體）
+# 📖 題目頁（容錯 + 答案顯示）
 # =====================================================
 def page_question():
     if not st.session_state["authenticated"]:

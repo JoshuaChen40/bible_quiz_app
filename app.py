@@ -15,29 +15,52 @@ load_dotenv()
 # =====================================================
 st.markdown("""
 <style>
+/* 全局字體比例調整，使用 rem 支援瀏覽器縮放 */
 html, body, [class*="css"] {
-    font-size: 1.7vw !important;      /* 約 30pt */
-    line-height: 1.4em !important;
+    font-size: 1.1rem !important;      /* 原 1.7vw → 約等於縮小 25% */
+    line-height: 1.5em !important;
+    overflow-x: hidden;
 }
+
+/* 標題 */
 h1, h2, h3, h4, h5 {
     font-weight: 800 !important;
     color: #222 !important;
     line-height: 1.3em !important;
 }
+
+/* 文字區塊 */
 p, span, div {
-    font-size: 1.6vw !important;
+    font-size: 1rem !important;
 }
+
+/* 按鈕樣式 */
 button, [data-testid="stButton"] button {
-    font-size: 1.7vw !important;
-    padding: 0.4em 1em !important;
-    border-radius: 10px !important;
+    font-size: 1.05rem !important;
+    padding: 0.3em 0.8em !important;
+    border-radius: 8px !important;
 }
+
+/* Alert 文字 */
 .stAlert {
-    font-size: 1.6vw !important;
+    font-size: 1rem !important;
 }
+
+/* 內容區域上下留白縮小，讓整頁可顯示更多 */
 .block-container {
-    padding-top: 1.5em;
-    padding-bottom: 1.5em;
+    padding-top: 0.8em !important;
+    padding-bottom: 0.8em !important;
+    max-width: 100% !important;
+}
+
+/* 防止集合頁太寬 */
+section.main > div {
+    max-width: 95% !important;
+}
+
+/* 題目集合頁的捲動與縮放控制 */
+[data-testid="stHorizontalBlock"] {
+    align-items: flex-start !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -168,6 +191,24 @@ def page_home():
 def page_question():
     if not st.session_state["authenticated"]:
         goto("login")
+
+    # 題目頁放大字體（+25%）
+    st.markdown("""
+    <style>
+    /* 放大題目頁文字 */
+    h1, h2, h3, h4, h5, p, span, div, li {
+        font-size: 1.45rem !important;  /* 比全域多 25% */
+        line-height: 1.5em !important;
+    }
+    button, [data-testid="stButton"] button {
+        font-size: 1.2rem !important;
+        padding: 0.4em 1em !important;
+    }
+    .stAlert {
+        font-size: 1.2rem !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     st.markdown("### 📖 題目頁面")
 

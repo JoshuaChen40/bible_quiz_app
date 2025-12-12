@@ -8,7 +8,7 @@ from cryptography.fernet import Fernet
 # =====================================================
 # 🧩 初始化設定
 # =====================================================
-st.set_page_config(page_title="聖經大車拼", page_icon="✝️", layout="wide")
+st.set_page_config(page_title="腦光一閃", page_icon="✝️", layout="wide")
 load_dotenv()
 
 # =====================================================
@@ -69,7 +69,13 @@ if st.query_params.get("ping") == "1":
 # 📘 題庫載入（支援加密）
 # =====================================================
 QUESTIONS = None
+if QUIZ_SECRET_KEY:
+    st.sidebar.info(f"偵測到 QUIZ_SECRET_KEY (長度: {len(QUIZ_SECRET_KEY)})")
+else:
+    st.sidebar.error("❌ 未偵測到 QUIZ_SECRET_KEY 環境變數！")
+
 if QUIZ_SECRET_KEY and os.path.exists("questions.enc"):
+    print("有找到QUIZ_SECRET_KEY跟questions.enc")
     try:
         fernet = Fernet(QUIZ_SECRET_KEY.encode())
         with open("questions.enc", "rb") as f:
@@ -81,9 +87,17 @@ if QUIZ_SECRET_KEY and os.path.exists("questions.enc"):
         st.stop()
 else:
     try:
-        with open("questions.json", "r", encoding="utf-8") as f:
-            QUESTIONS = json.load(f)
-        st.warning("⚠️ 未偵測到加密檔或金鑰，使用本地 questions.json。")
+        # 嘗試讀取 questions.json
+        if os.path.exists("questions.json"):
+            with open("questions.json", "r", encoding="utf-8") as f:
+                QUESTIONS = json.load(f)
+        else:
+            st.error("❌ 找不到 questions.json 或 questions.enc")
+            st.stop()
+            
+        if not QUIZ_SECRET_KEY:
+             st.warning("⚠️ 未偵測到加密金鑰，目前使用明文 questions.json。")
+             
     except Exception as e:
         st.error(f"❌ 題庫載入失敗：{e}")
         st.stop()
@@ -119,7 +133,7 @@ def goto_question(idx: int):
 # 🔐 登入頁
 # =====================================================
 def page_login():
-    st.title("✝️ 聖經大車拼登入")
+    st.title("✝️ 腦光一閃登入")
 
     username = st.text_input("帳號")
     password = st.text_input("密碼", type="password")
@@ -138,7 +152,7 @@ def page_home():
     if not st.session_state["authenticated"]:
         goto("login")
 
-    st.title("📚 聖經大車拼題目集合")
+    st.title("📚 腦光一閃題目集合")
 
     # ---- 分組顯示 ----
     groups = {}
@@ -177,7 +191,6 @@ def page_home():
                     unsafe_allow_html=True,
                 )
 
-                # ✅ 改用 Streamlit button
                 if st.button(f"題目 {idx + 1}", key=f"btn_{idx}", use_container_width=True):
                     goto_question(idx)
 
@@ -261,8 +274,10 @@ def page_question():
         st.write(q["question"])
         st.write("---")
 
-        for opt in ["A", "B", "C"]:
-            st.write(f"**({opt})** {q[opt]}")
+        # ✅ 修改處：支援 A, B, C, D 並加入檢查
+        for opt in ["A", "B", "C", "D"]:
+            if opt in q and q[opt]: # 確保 JSON 中有該選項
+                st.write(f"**({opt})** {q[opt]}")
 
         if st.button("📜 解答"):
             st.session_state["show_answer_dialog"] = True

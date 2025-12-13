@@ -69,13 +69,7 @@ if st.query_params.get("ping") == "1":
 # 📘 題庫載入（支援加密）
 # =====================================================
 QUESTIONS = None
-if QUIZ_SECRET_KEY:
-    st.sidebar.info(f"偵測到 QUIZ_SECRET_KEY (長度: {len(QUIZ_SECRET_KEY)})")
-else:
-    st.sidebar.error("❌ 未偵測到 QUIZ_SECRET_KEY 環境變數！")
-
 if QUIZ_SECRET_KEY and os.path.exists("questions.enc"):
-    print("有找到QUIZ_SECRET_KEY跟questions.enc")
     try:
         fernet = Fernet(QUIZ_SECRET_KEY.encode())
         with open("questions.enc", "rb") as f:
@@ -113,6 +107,8 @@ defaults = {
     "show_answer_dialog": False,
     "answered_questions": [],
     "confirm_clear": False,
+    # ✅ 新增：文字縮放倍率，預設 1.25 倍
+    "text_scale": 1.25, 
 }
 for k, v in defaults.items():
     st.session_state.setdefault(k, v)
@@ -196,6 +192,19 @@ def page_home():
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
+    # ✅ 新增：文字縮放拉桿
+    st.divider()
+    st.markdown("### 🔍 題目文字大小調整")
+    st.session_state["text_scale"] = st.slider(
+        "選擇題目頁面文字縮放倍率 (基礎 1.1rem)",
+        min_value=1.0,
+        max_value=2.5,
+        value=st.session_state["text_scale"],
+        step=0.1,
+        format="%.1f 倍",
+        help="此倍率應用於題目頁面，基於全局字體大小 1.1rem 進行縮放。"
+    )
+
     # ---- 底部操作區 ----
     st.divider()
     col1, col2, col3 = st.columns([1, 1, 1])
@@ -247,18 +256,29 @@ def page_question():
     if not st.session_state["authenticated"]:
         goto("login")
 
-    # 放大字體（題目頁 +25%）
-    st.markdown("""
+    # 讀取縮放倍率
+    scale = st.session_state["text_scale"] 
+    
+    # 設置基礎大小 (base_rem = 1.1rem，取自全局樣式)
+    base_rem = 1.1 
+    
+    # 計算新的 rem 值
+    new_font_size = base_rem * scale 
+    new_button_size = base_rem * scale * 0.9 # 按鈕稍微小一點
+    
+    # 應用放大字體（題目頁）
+    st.markdown(f"""
     <style>
-    h1, h2, h3, h4, h5, p, span, div, li {
-        font-size: 1.25rem !important;
+    /* 調整字體大小，使用動態計算的 rem 值 */
+    h1, h2, h3, h4, h5, p, span, div, li {{
+        font-size: {new_font_size:.2f}rem !important;
         line-height: 1.5em !important;
-    }
-    button, [data-testid="stButton"] button {
-        font-size: 1.2rem !important;
+    }}
+    button, [data-testid="stButton"] button {{
+        font-size: {new_button_size:.2f}rem !important; 
         padding: 0.4em 1em !important;
-    }
-    .stAlert { font-size: 1.2rem !important; }
+    }}
+    .stAlert {{ font-size: {new_button_size:.2f}rem !important; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -272,7 +292,7 @@ def page_question():
         q = QUESTIONS[q_idx]
         st.markdown(f"#### 題目 {q_idx + 1}")
         st.write(q["question"])
-        st.write("---")
+        # st.write("---")
 
         # ✅ 修改處：支援 A, B, C, D 並加入檢查
         for opt in ["A", "B", "C", "D"]:

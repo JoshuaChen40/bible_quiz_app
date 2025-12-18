@@ -27,3 +27,5 @@ questions.json
 questions.json*
 encrypted_output.txt
 quiz_env.txt
+questions_data.json
+questions_data.json.json*

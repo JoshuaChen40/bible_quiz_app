@@ -199,3 +199,15 @@ docker run -d --name bible-quiz -p 8501:8501 --env-file .env bible-quiz-app
 是否要我幫你再補一個
 👉 `run_local.sh`（一鍵 build + run + 打開瀏覽器）
 讓你只要輸入 `sh run_local.sh` 就能啟動整個容器測試？
+
+---
+# 生成PPT
+```
+sudo apt update
+
+sudo apt install python3-pip
+
+python3 -m pip --version
+
+python3 -m pip install python-pptx==1.0.2
+```
